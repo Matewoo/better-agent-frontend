@@ -4,7 +4,7 @@
   
       // Container erstellen (wird unsere Pill)
       const button = document.createElement('button');
-      button.className = 'scroll-top'; // Start with hidden state
+      button.className = 'chat-widget'; // Eigene Klasse statt scroll-top
       button.style.position = 'fixed';
       button.style.bottom = '80px';
       button.style.right = '20px';
@@ -23,6 +23,7 @@
       button.style.padding = '0';
       button.style.overflow = 'hidden';
       button.style.transition = 'all 0.3s ease-in-out';
+      button.style.opacity = '0'; // Start hidden
   
       // Kreis für das Icon erstellen
       const circleContainer = document.createElement('div');
@@ -75,26 +76,178 @@
         text.style.opacity = '0'; // Hide text
       });
   
-      // Klick-Event
+      // Klick-Event verbessern
       button.addEventListener('click', () => {
-        alert('Hier könnte dein Chat starten...');
+        // Überprüfen, ob das Fenster bereits existiert
+        if (document.querySelector('.chat-window')) return;
+        
+        // Button vorher expandieren
+        button.style.background = 'white';
+        button.style.width = '9em';
+        text.style.opacity = '1';
+      
+        // Fenster erstellen - mit der Größe der expandierten Pille starten
+        const chatWindow = document.createElement('div');
+        chatWindow.className = 'chat-window';
+        chatWindow.style.position = 'fixed';
+        chatWindow.style.bottom = '80px';
+        chatWindow.style.right = '20px';
+        chatWindow.style.width = '9em'; // Mit expandierter Pillengröße starten
+        chatWindow.style.height = '3em';
+        chatWindow.style.background = 'white';
+        chatWindow.style.borderRadius = '1.5em';
+        chatWindow.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+        chatWindow.style.transition = 'all 0.3s ease-in-out';
+        chatWindow.style.overflow = 'hidden';
+        chatWindow.style.zIndex = 10000;
+        chatWindow.style.display = 'flex';
+        chatWindow.style.flexDirection = 'column';
+        
+        // Header-Container erstellen MIT NULL PADDING zu Beginn
+        const headerContainer = document.createElement('div');
+        headerContainer.style.display = 'flex';
+        headerContainer.style.alignItems = 'center';
+        headerContainer.style.padding = '0px'; // Starte ohne Padding!
+        headerContainer.style.transition = 'all 0.3s ease-in-out';
+        headerContainer.style.background = 'white';
+        headerContainer.style.borderBottom = '1px solid #eee';
+        
+        // Kreis klonen mit ORIGINALER Größe
+        const circleClone = circleContainer.cloneNode(true);
+        circleClone.style.width = '3em';  // Originalgröße beibehalten
+        circleClone.style.height = '3em'; // Originalgröße beibehalten
+        circleClone.style.marginRight = '10px';
+        
+        // Text klonen und anpassen
+        const textClone = text.cloneNode(true);
+        textClone.style.opacity = '1';
+        textClone.style.margin = '0';
+        
+        // Schließen-Button hinzufügen
+        const closeButton = document.createElement('button');
+        closeButton.innerHTML = '&#9660;';
+        closeButton.style.background = 'transparent';
+        closeButton.style.border = 'none';
+        closeButton.style.color = '#a81411';
+        closeButton.style.fontSize = '16px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.marginLeft = 'auto';
+        
+        // Schließen-Button Event-Listener anpassen
+        closeButton.addEventListener('click', () => {
+          // Inhalte ausblenden
+          textArea.style.opacity = '0';
+          inputContainer.style.opacity = '0';
+          textClone.style.opacity = '0';
+          
+          // Die Sichtbarkeit des Buttons wird jetzt über die Klassen gesteuert
+          // Wir setzen die Eigenschaften zurück, ohne die Sichtbarkeit zu ändern
+          button.style.background = 'transparent';
+          button.style.width = '3em';
+          text.style.opacity = '0';
+          
+          setTimeout(() => {
+            // Fenster verkleinern
+            chatWindow.style.width = '3em';
+            chatWindow.style.height = '3em';
+            chatWindow.style.borderRadius = '1.5em';
+            headerContainer.style.padding = '0px';
+            
+            // Fenster erst NACH einer Verzögerung entfernen
+            setTimeout(() => {
+              chatWindow.remove();
+              
+              // WICHTIG: Sichtbarkeit nach dem Schließen neu synchronisieren
+              syncScrollTopState();
+            }, 300);
+          }, 50);
+        });
+        
+        // Elemente zum Header hinzufügen
+        headerContainer.appendChild(circleClone);
+        headerContainer.appendChild(textClone);
+        headerContainer.appendChild(closeButton);
+        chatWindow.appendChild(headerContainer);
+        
+        // Textbereich und Eingabebereich hinzufügen
+        const textArea = document.createElement('div');
+        textArea.style.flex = '1';
+        textArea.style.padding = '10px';
+        textArea.style.overflowY = 'auto';
+        textArea.style.background = '#f9f9f9';
+        textArea.style.opacity = '0';
+        textArea.style.transition = 'opacity 0.3s ease-in-out';
+        chatWindow.appendChild(textArea);
+        
+        const inputContainer = document.createElement('div');
+        inputContainer.style.display = 'flex';
+        inputContainer.style.padding = '10px';
+        inputContainer.style.borderTop = '1px solid #ccc';
+        inputContainer.style.opacity = '0';
+        inputContainer.style.transition = 'opacity 0.3s ease-in-out';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Nachricht eingeben...';
+        input.style.flex = '1';
+        input.style.padding = '8px';
+        input.style.border = '1px solid #ccc';
+        input.style.borderRadius = '4px';
+        input.style.marginRight = '10px';
+        inputContainer.appendChild(input);
+        
+        const sendButton = document.createElement('button');
+        sendButton.innerText = 'Senden';
+        sendButton.style.background = '#a81411';
+        sendButton.style.color = 'white';
+        sendButton.style.border = 'none';
+        sendButton.style.padding = '8px 12px';
+        sendButton.style.borderRadius = '4px';
+        sendButton.style.cursor = 'pointer';
+        inputContainer.appendChild(sendButton);
+        
+        chatWindow.appendChild(inputContainer);
+        
+        // Fenster zum Dokument hinzufügen BEVOR der Button ausgeblendet wird
+        document.body.appendChild(chatWindow);
+      
+        // Kurze Verzögerung, damit das Fenster stabil ist
+        requestAnimationFrame(() => {
+          // Original-Button ausblenden erst NACHDEM das Fenster sichtbar ist
+          button.style.opacity = '0';
+          
+          // Animation für Fenstervergrößerung UND PADDING
+          setTimeout(() => {
+            chatWindow.style.width = '300px';
+            chatWindow.style.height = '400px';
+            chatWindow.style.borderRadius = '8px';
+            headerContainer.style.padding = '10px'; // Padding animieren!
+            
+            setTimeout(() => {
+              textArea.style.opacity = '1';
+              inputContainer.style.opacity = '1';
+            }, 150);
+          }, 10);
+        });
       });
 
-      // Synchronize with existing scroll-top button
+      // Synchronize with existing scroll-top button, but use our own classes
       function syncScrollTopState() {
         // Find the existing scroll-top button
-        const existingScrollTopBtn = document.querySelector('.scroll-top:not([data-chat-widget])');
+        const existingScrollTopBtn = document.querySelector('.scroll-top');
         
         if (existingScrollTopBtn) {
           // Check if the existing button has the visible class
           if (existingScrollTopBtn.classList.contains('scroll-top-visible')) {
-            // Make our button visible too
-            if (!button.classList.contains('scroll-top-visible')) {
-              button.classList.add('scroll-top-visible');
+            // Make our button visible too using our own class
+            if (!button.classList.contains('chat-widget-visible')) {
+              button.classList.add('chat-widget-visible');
+              button.style.opacity = '1'; // Show our button
             }
           } else {
             // Make our button hidden too
-            button.classList.remove('scroll-top-visible');
+            button.classList.remove('chat-widget-visible');
+            button.style.opacity = '0'; // Hide our button
           }
         }
       }
@@ -113,7 +266,7 @@
       
       // Start observing once the DOM is fully loaded
       window.addEventListener('load', () => {
-        const existingScrollTopBtn = document.querySelector('.scroll-top:not([data-chat-widget])');
+        const existingScrollTopBtn = document.querySelector('.scroll-top');
         if (existingScrollTopBtn) {
           observer.observe(existingScrollTopBtn, { attributes: true });
           // Initial sync
@@ -123,6 +276,21 @@
 
       // Also check on scroll events in case the original button uses scroll events
       window.addEventListener('scroll', syncScrollTopState);
+
+      // Stil-Regeln für unsere eigenen Klassen hinzufügen
+      const styleElement = document.createElement('style');
+      styleElement.textContent = `
+        .chat-widget {
+          opacity: 0 !important;
+          visibility: hidden;
+          transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .chat-widget.chat-widget-visible {
+          opacity: 1 !important;
+          visibility: visible;
+        }
+      `;
+      document.head.appendChild(styleElement);
 
       document.body.appendChild(button);
     }
