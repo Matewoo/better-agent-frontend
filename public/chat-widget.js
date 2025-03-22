@@ -218,8 +218,8 @@
           
           // Animation für Fenstervergrößerung UND PADDING
           setTimeout(() => {
-            chatWindow.style.width = '300px';
-            chatWindow.style.height = '400px';
+            chatWindow.style.width = '25em';
+            chatWindow.style.height = '30em';
             chatWindow.style.borderRadius = '8px';
             headerContainer.style.padding = '10px'; // Padding animieren!
             
@@ -230,6 +230,32 @@
           }, 10);
         });
       });
+
+      document.body.appendChild(button);
+      
+      // Add attention animation after 5 seconds
+      setTimeout(() => {
+        // Only animate if the chat window isn't already open
+        if (!document.querySelector('.chat-window')) {
+          // Store original opacity to restore it later if needed
+          const originalOpacity = button.style.opacity;
+          
+          // Make button visible for animation
+          button.style.opacity = '1';
+          button.classList.add('chat-widget-attention');
+          
+          // Remove animation class after it completes
+          button.addEventListener('animationend', () => {
+            button.classList.remove('chat-widget-attention');
+            
+            // Restore original state if user didn't interact
+            if (!document.querySelector('.chat-window')) {
+              // Let normal visibility rules take over again
+              syncScrollTopState();
+            }
+          }, { once: true });
+        }
+      }, 5000);
 
       // Synchronize with existing scroll-top button, but use our own classes
       function syncScrollTopState() {
@@ -288,6 +314,24 @@
         .chat-widget.chat-widget-visible {
           opacity: 1 !important;
           visibility: visible;
+        }
+        
+        @keyframes attentionAnimation {
+          0% { transform: scale(1) rotate(0deg); }
+          10% { transform: scale(1.4) rotate(-10deg); }
+          20% { transform: scale(1.4) rotate(10deg); }
+          30% { transform: scale(1.4) rotate(-10deg); }
+          40% { transform: scale(1.4) rotate(10deg); }
+          50% { transform: scale(1.4) rotate(-8deg); }
+          60% { transform: scale(1.4) rotate(8deg); }
+          70% { transform: scale(1.4) rotate(-5deg); }
+          80% { transform: scale(1.4) rotate(5deg); }
+          90% { transform: scale(1.4) rotate(0deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        
+        .chat-widget-attention {
+          animation: attentionAnimation 2s ease-in-out;
         }
       `;
       document.head.appendChild(styleElement);
