@@ -197,13 +197,27 @@
         inputContainer.appendChild(input);
         
         const sendButton = document.createElement('button');
-        sendButton.innerText = 'Senden';
         sendButton.style.background = '#a81411';
         sendButton.style.color = 'white';
         sendButton.style.border = 'none';
-        sendButton.style.padding = '8px 12px';
+        sendButton.style.width = '34px';  // Make it square
+        sendButton.style.height = '34px'; // Same height as the input (8px padding + 18px icon)
         sendButton.style.borderRadius = '4px';
         sendButton.style.cursor = 'pointer';
+        sendButton.style.display = 'flex';
+        sendButton.style.justifyContent = 'center';
+        sendButton.style.alignItems = 'center';
+        sendButton.style.padding = '0'; // Remove padding since we're using exact dimensions
+
+        // Create send icon
+        const sendIcon = document.createElement('img');
+        sendIcon.src = 'https://localhost:3000/static/icons/send.png';
+        sendIcon.style.width = '18px';
+        sendIcon.style.height = '18px';
+        sendIcon.alt = 'Send';
+
+        // Add icon to button
+        sendButton.appendChild(sendIcon);
         inputContainer.appendChild(sendButton);
         
         chatWindow.appendChild(inputContainer);
@@ -220,6 +234,7 @@
           setTimeout(() => {
             chatWindow.style.width = '25em';
             chatWindow.style.height = '30em';
+            chatWindow.style.maxWidth = '90vw';
             chatWindow.style.borderRadius = '8px';
             headerContainer.style.padding = '10px'; // Padding animieren!
             
