@@ -220,6 +220,165 @@
         sendButton.appendChild(sendIcon);
         inputContainer.appendChild(sendButton);
         
+        // Add event listeners for sending messages
+        const sendMessage = () => {
+          const messageText = input.value.trim();
+          if (!messageText) return;
+          
+          // Add user message to chat
+          appendMessage('user', messageText);
+          
+          // Clear input field
+          input.value = '';
+          
+          // Generate or retrieve userId (stored in sessionStorage for persistence)
+          let userId = sessionStorage.getItem('chat-widget-userId');
+          if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substring(2, 15);
+            sessionStorage.setItem('chat-widget-userId', userId);
+          }
+          
+          // Show loading indicator
+          const loadingId = showLoadingIndicator();
+          
+          // Log before sending request
+          console.log("Sending request to backend:", {
+            userId: userId,
+            message: messageText
+          });
+          
+          // Always use the proxy regardless of host
+          const apiUrl = 'https://localhost:3000/proxy/chat';
+          console.log("Always using proxy at:", apiUrl);
+          
+          // No early returns or conditional mock responses
+          
+          fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message: messageText,
+              userId: userId
+            })
+          })
+          .then(res => {
+            console.log("Backend response status:", res.status);
+            console.log("Response headers:", Object.fromEntries([...res.headers.entries()]));
+            
+            if (!res.ok) {
+              throw new Error('Server responded with status: ' + res.status);
+            }
+            return res.json();
+          })
+          .then(data => {
+            // Remove loading indicator
+            removeLoadingIndicator(loadingId);
+            
+            // Display bot response
+            console.log("Bot response data:", data);
+            if (data && data.message) {
+              appendMessage('bot', data.message);
+            } else {
+              appendMessage('bot', 'Ich habe Ihre Nachricht erhalten.');
+              console.warn("No message property in response data:", data);
+            }
+          })
+          .catch(err => {
+            // Remove loading indicator
+            removeLoadingIndicator(loadingId);
+            
+            // Show detailed error information
+            console.error("Fetch error details:", {
+              message: err.message,
+              stack: err.stack,
+              name: err.name
+            });
+            appendMessage('error', 'Es gab ein Problem bei der Verbindung zum Server.');
+            
+            // Check for common CORS issues
+            console.log("If you're seeing CORS errors, make sure your backend has CORS enabled for http://localhost:3000");
+          });
+        };
+        
+        // Handle send button click
+        sendButton.addEventListener('click', sendMessage);
+        
+        // Handle Enter key in input field
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+        
+        // Helper function to append messages to the chat
+        function appendMessage(type, content) {
+          const messageEl = document.createElement('div');
+          messageEl.className = `chat-message ${type}-message`;
+          messageEl.style.padding = '8px 12px';
+          messageEl.style.margin = '8px 0';
+          messageEl.style.borderRadius = '12px';
+          messageEl.style.maxWidth = '80%';
+          messageEl.style.wordBreak = 'break-word';
+          
+          if (type === 'user') {
+            messageEl.style.backgroundColor = '#f0f0f0';
+            messageEl.style.marginLeft = 'auto';
+            messageEl.style.textAlign = 'right';
+          } else if (type === 'bot') {
+            messageEl.style.backgroundColor = '#a81411';
+            messageEl.style.color = 'white';
+            messageEl.style.marginRight = 'auto';
+          } else if (type === 'error') {
+            messageEl.style.backgroundColor = '#ffdddd';
+            messageEl.style.color = '#ff0000';
+            messageEl.style.marginRight = 'auto';
+          }
+          
+          messageEl.textContent = content;
+          textArea.appendChild(messageEl);
+          
+          // Auto-scroll to bottom
+          textArea.scrollTop = textArea.scrollHeight;
+        }
+        
+        // Loading indicator functions
+        function showLoadingIndicator() {
+          const loadingId = Date.now().toString();
+          const loadingEl = document.createElement('div');
+          loadingEl.id = `loading-${loadingId}`;
+          loadingEl.className = 'loading-indicator';
+          loadingEl.style.display = 'flex';
+          loadingEl.style.padding = '8px 12px';
+          loadingEl.style.margin = '8px 0';
+          
+          const dots = document.createElement('div');
+          dots.textContent = 'Schreibt';
+          dots.style.color = '#888';
+          
+          loadingEl.appendChild(dots);
+          textArea.appendChild(loadingEl);
+          textArea.scrollTop = textArea.scrollHeight;
+          
+          // Animate the loading dots
+          let count = 0;
+          const interval = setInterval(() => {
+            count = (count + 1) % 4;
+            dots.textContent = 'Schreibt' + '.'.repeat(count);
+          }, 300);
+          
+          loadingEl.interval = interval;
+          return loadingId;
+        }
+        
+        function removeLoadingIndicator(loadingId) {
+          const loadingEl = document.getElementById(`loading-${loadingId}`);
+          if (loadingEl) {
+            clearInterval(loadingEl.interval);
+            loadingEl.remove();
+          }
+        }
+
         chatWindow.appendChild(inputContainer);
         
         // Fenster zum Dokument hinzufügen BEVOR der Button ausgeblendet wird
