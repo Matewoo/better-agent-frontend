@@ -334,23 +334,39 @@
             messageEl.style.backgroundColor = '#f0f0f0';
             messageEl.style.marginLeft = 'auto';
             messageEl.style.textAlign = 'right';
+            messageEl.textContent = content; // Use textContent for user messages (security)
           } else if (type === 'bot') {
             messageEl.style.backgroundColor = '#a81411';
             messageEl.style.color = 'white';
             messageEl.style.marginRight = 'auto';
+            
+            // Convert URLs to clickable links for bot messages
+            const linkedContent = convertLinksToAnchors(content);
+            messageEl.innerHTML = linkedContent; // Use innerHTML for bot messages with links
           } else if (type === 'error') {
             messageEl.style.backgroundColor = '#ffdddd';
             messageEl.style.color = '#ff0000';
             messageEl.style.marginRight = 'auto';
+            messageEl.textContent = content;
           }
           
-          messageEl.textContent = content;
           textArea.appendChild(messageEl);
           
           // Auto-scroll to bottom
           textArea.scrollTop = textArea.scrollHeight;
         }
         
+        // Helper function to convert URLs in text to clickable links
+        function convertLinksToAnchors(text) {
+          // Regular expression to match URLs
+          const urlRegex = /(https?:\/\/[^\s]+)/g;
+          
+          // Replace URLs with anchor tags
+          return text.replace(urlRegex, function(url) {
+            return `<a href="${url}" target="_blank" style="color: white; text-decoration: underline;">${url}</a>`;
+          });
+        }
+
         // Loading indicator functions
         function showLoadingIndicator() {
           const loadingId = Date.now().toString();
