@@ -140,6 +140,15 @@
           inputContainer.style.opacity = '0';
           textClone.style.opacity = '0';
           
+          // Store chat messages before closing
+          const messages = Array.from(textArea.children).map(msg => ({
+            type: msg.classList.contains('user-message') ? 'user' : 
+                  msg.classList.contains('bot-message') ? 'bot' : 
+                  msg.classList.contains('error-message') ? 'error' : '',
+            content: msg.textContent
+          }));
+          sessionStorage.setItem('chat-widget-messages', JSON.stringify(messages));
+          
           // Die Sichtbarkeit des Buttons wird jetzt über die Klassen gesteuert
           // Wir setzen die Eigenschaften zurück, ohne die Sichtbarkeit zu ändern
           button.style.background = 'transparent';
@@ -380,6 +389,24 @@
         }
 
         chatWindow.appendChild(inputContainer);
+        
+        // Load saved messages if they exist
+        const savedMessages = sessionStorage.getItem('chat-widget-messages');
+        if (savedMessages) {
+          try {
+            const messages = JSON.parse(savedMessages);
+            messages.forEach(msg => {
+              appendMessage(msg.type, msg.content);
+            });
+            
+            // Auto-scroll to bottom after loading messages
+            setTimeout(() => {
+              textArea.scrollTop = textArea.scrollHeight;
+            }, 300);
+          } catch (err) {
+            console.error('Error loading saved chat messages:', err);
+          }
+        }
         
         // Fenster zum Dokument hinzufügen BEVOR der Button ausgeblendet wird
         document.body.appendChild(chatWindow);
