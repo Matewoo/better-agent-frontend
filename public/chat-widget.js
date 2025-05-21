@@ -186,7 +186,30 @@
         textArea.style.background = '#f9f9f9';
         textArea.style.opacity = '0';
         textArea.style.transition = 'opacity 0.3s ease-in-out';
+        
+        // Wheel-Event abfangen, damit nur der Chat scrollt, nicht die ganze Seite
+        textArea.addEventListener('wheel', (e) => {
+          // Verhindern des Standard-Scrollens der Seite
+          e.preventDefault();
+          
+          // Manuelles Scrollen des Chat-Bereichs
+          textArea.scrollTop += e.deltaY;
+        }, { passive: false }); // passive: false ist wichtig, um preventDefault() zu erlauben
+        
         chatWindow.appendChild(textArea);
+
+        // Datenschutzhinweis hinzufügen
+        const disclaimerEl = document.createElement('div');
+        disclaimerEl.className = 'chat-disclaimer';
+        disclaimerEl.textContent = 'Mit der Nutzung dieser Chatfunktion stimmen Sie unseren Live Chat Bedingungen zu.';
+        disclaimerEl.style.color = '#888';
+        disclaimerEl.style.fontSize = '12px';
+        disclaimerEl.style.textAlign = 'center';
+        disclaimerEl.style.padding = '5px 10px';
+        disclaimerEl.style.marginBottom = '15px';
+        //disclaimerEl.style.backgroundColor = '#f0f0f0';
+        //disclaimerEl.style.borderRadius = '4px';
+        textArea.appendChild(disclaimerEl);
         
         const inputContainer = document.createElement('div');
         inputContainer.style.display = 'flex';
@@ -422,6 +445,9 @@
           } catch (err) {
             console.error('Error loading saved chat messages:', err);
           }
+        } else {
+          // Show initial message if no saved messages
+          appendMessage('bot', 'Willkommen im Chat! Wie kann ich Ihnen helfen?');
         }
         
         // Fenster zum Dokument hinzufügen BEVOR der Button ausgeblendet wird
@@ -435,7 +461,7 @@
           // Animation für Fenstervergrößerung UND PADDING
           setTimeout(() => {
             chatWindow.style.width = '25em';
-            chatWindow.style.height = '30em';
+            chatWindow.style.height = '45em';
             chatWindow.style.maxWidth = '90vw';
             chatWindow.style.borderRadius = '8px';
             headerContainer.style.padding = '10px'; // Padding animieren!
