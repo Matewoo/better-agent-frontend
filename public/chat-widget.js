@@ -141,12 +141,14 @@
           textClone.style.opacity = '0';
           
           // Store chat messages before closing
-          const messages = Array.from(textArea.children).map(msg => ({
-            type: msg.classList.contains('user-message') ? 'user' : 
-                  msg.classList.contains('bot-message') ? 'bot' : 
-                  msg.classList.contains('error-message') ? 'error' : '',
-            content: msg.textContent
-          }));
+          const messages = Array.from(textArea.children)
+            .filter(msg => !msg.classList.contains('chat-disclaimer')) // Disclaimer ausschließen
+            .map(msg => ({
+              type: msg.classList.contains('user-message') ? 'user' : 
+                    msg.classList.contains('bot-message') ? 'bot' : 
+                    msg.classList.contains('error-message') ? 'error' : '',
+              content: msg.textContent
+            }));
           sessionStorage.setItem('chat-widget-messages', JSON.stringify(messages));
           
           // Die Sichtbarkeit des Buttons wird jetzt über die Klassen gesteuert
@@ -201,12 +203,11 @@
         // Datenschutzhinweis hinzufügen
         const disclaimerEl = document.createElement('div');
         disclaimerEl.className = 'chat-disclaimer';
-        disclaimerEl.textContent = 'Mit der Nutzung dieser Chatfunktion stimmen Sie unseren Live Chat Bedingungen zu.';
+        disclaimerEl.innerHTML = 'Durch die Nutzung dieser Chatfunktion erklären Sie sich mit unseren <a href="#" class="chat-terms" style="color: #a81411; text-decoration: underline;">Live-Chat-Bedingungen</a> einverstanden.';
         disclaimerEl.style.color = '#888';
         disclaimerEl.style.fontSize = '12px';
         disclaimerEl.style.textAlign = 'center';
         disclaimerEl.style.padding = '5px 10px';
-        disclaimerEl.style.marginBottom = '15px';
         //disclaimerEl.style.backgroundColor = '#f0f0f0';
         //disclaimerEl.style.borderRadius = '4px';
         textArea.appendChild(disclaimerEl);
@@ -348,7 +349,7 @@
           const messageEl = document.createElement('div');
           messageEl.className = `chat-message ${type}-message`;
           messageEl.style.padding = '8px 12px';
-          messageEl.style.margin = '8px 0';
+          messageEl.style.margin = '10px 15px';
           messageEl.style.borderRadius = '12px';
           messageEl.style.maxWidth = '80%';
           messageEl.style.wordBreak = 'break-word';
